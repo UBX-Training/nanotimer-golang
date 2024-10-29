@@ -1,5 +1,5 @@
 
-# NanoTimer-Go
+# NanoTimer-Golang
 
 ## Overview
 
@@ -21,7 +21,7 @@ This architecture delivers enhanced precision and offloads the CPU-intensive int
 
 ## Installation
 
-To install the Node.js package, run:
+To install the Node.js package, first install golang on your host os then run run:
 
 ```bash
 npm install nanotimer
@@ -34,6 +34,27 @@ cd lib
 go build -o ../bin/timer timer.go
 ```
 
+## Building via docker.
+
+You can also install/build via docker like so:
+
+```
+FROM debian:bullseye as builder
+
+# Build nanotimer binary
+RUN cd / && \
+    git clone https://github.com/UBX-Training/nanotimer-golang.git && \
+    cd nanotimer-golang && \
+    mkdir bin ; go build -o bin/timer lib/timer.go
+```
+
+Then in your actual docker file you can just copy the build files directly into your node_modules directory - ie:
+
+```
+# Copy in previously compiled nanotimer sources to node_modules.
+COPY --from=builder /nanotimer-golang /usr/src/app/node_modules/
+```
+
 ---
 
 ## Usage
@@ -43,7 +64,7 @@ Below is an example demonstrating how to use `NanoTimer` with its updated archit
 ### Example: Basic Usage
 
 ```javascript
-const NanoTimer = require('nanotimer');
+const NanoTimer = require('nanotimer-golang');
 const timer = new NanoTimer();
 
 // Simple Interval Example
@@ -128,6 +149,31 @@ setTimeout(() => {
   nanoTimer.stop();
   console.log('Timers stopped after 30 seconds');
 }, 30000);
+```
+
+---
+
+## Example drift comparison between regular setInterval vs using the golang nanotimer version:
+
+```
+=== Summary of Results ===
+
+NanoTimer Stats:
+Count: 299
+Average Drift: 25.619 ms
+Min Drift: 20.000 ms
+Max Drift: 40.000 ms
+Standard Deviation: 2.478 ms
+
+Regular Timer Stats:
+Count: 299
+Average Drift: 155.649 ms
+Min Drift: 9.000 ms
+Max Drift: 311.000 ms
+Standard Deviation: 83.953 ms
+
+Difference in Average Drift (NanoTimer - Regular Timer):
+-130.030 ms
 ```
 
 ---
